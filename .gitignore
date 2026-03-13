@@ -3,18 +3,40 @@ bin/
 obj/
 *.user
 *.suo
+*.csproj.user
 .vs/
+*.userprefs
+TestResults/
 
 # Docker
+docker-compose.dcproj.user
 
-# (Opcional: Si quieres subir una plantilla sin claves, crea un .env.template)
-
-# Node/React
+# Node / React
 node_modules/
+dist/
 build/
 .pnp
 .pnp.js
 
+# Variables de entorno (contienen credenciales)
+.env
+Inventory.Frontend.React/.env
+Inventory.Frontend.React/.env.docker
+
 # Base de datos local
 *.mdf
 *.ldf
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log

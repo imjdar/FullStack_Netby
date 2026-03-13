@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Inventory.Products.Api.Application.DTOs;
 using Inventory.Products.Api.Application.Services;
-using Inventory.Products.Api.Infrastructure.Data;
-using Inventory.Products.Api.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace Inventory.Products.Api.Controllers
 {
@@ -11,98 +8,82 @@ namespace Inventory.Products.Api.Controllers
     [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context; //La bdd conexion
-        private readonly IProductService _productService; // Logica de Negocio (ej. subir imagen)
+        private readonly IProductService _productService;
+        private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(ApplicationDbContext context, IProductService productService)
+        public ProductsController(IProductService productService, ILogger<ProductsController> logger)
         {
-            _context = context;
             _productService = productService;
+            _logger = logger;
         }
 
-        //(GET)
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var products = await _context.Productos.ToListAsync();
+            var products = await _productService.GetAllAsync();
             return Ok(products);
         }
 
-        //(GET por id)
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var product = await _context.Productos.FindAsync(id);
-            if (product == null) return NotFound(new { message = "Producto no encontrado" });
+            var product = await _productService.GetByIdAsync(id);
+            if (product == null)
+                return NotFound(new { message = $"Producto con ID {id} no encontrado." });
 
             return Ok(product);
         }
 
-        //(Post)
         [HttpPost]
-        [Consumes("multipart/form-data")] // Necesario para recibir archivos
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> Create([FromForm] ProductCreateDto dto)
         {
-            // Manejo de la imagen
-            string imageUrl = "/images/default.png";
-            if (dto.ArchivoImagen != null)
-            {
-                imageUrl = await _productService.UploadImage(dto.ArchivoImagen);
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            // Mapeo de DTO a Entidad
-            var newProduct = new Product
-            {
-                Name = dto.Name,
-                Description = dto.Description,
-                Category = dto.Category,
-                Price = dto.Price,
-                StockQuantity = dto.StockQuantity,
-                ImageUrl = imageUrl
-            };
-
-            _context.Productos.Add(newProduct);
-            await _context.SaveChangesAsync();
-
-            // Retorna un 201 Created y la ruta para ver el nuevo producto
-            return CreatedAtAction(nameof(GetById), new { id = newProduct.Id }, newProduct);
+            var product = await _productService.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
         }
 
-        //(PUT)
         [HttpPut("{id}")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Update(int id, [FromForm] ProductUpdateDto dto)
         {
-            var product = await _context.Productos.FindAsync(id);
-            if (product == null) return NotFound();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            // Si viene imagen nueva, se sube; si no, se queda el valor que estaba
-            if (dto.NewImage != null)
-            {
-                product.ImageUrl = await _productService.UploadImage(dto.NewImage);
-            }
+            var product = await _productService.UpdateAsync(id, dto);
+            if (product == null)
+                return NotFound(new { message = $"Producto con ID {id} no encontrado." });
 
-            product.Name = dto.Name;
-            product.Description = dto.Description;
-            product.Price = dto.Price;
-            product.StockQuantity = dto.StockQuantity;
-            product.Category = dto.Category;
-
-            await _context.SaveChangesAsync();
-            return NoContent();
+            return Ok(product);
         }
 
-        //(DELETE)
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var product = await _context.Productos.FindAsync(id);
-            if (product == null) return NotFound();
+            var deleted = await _productService.DeleteAsync(id);
+            if (!deleted)
+                return NotFound(new { message = $"Producto con ID {id} no encontrado." });
 
-            _context.Productos.Remove(product);
-            await _context.SaveChangesAsync();
+            return Ok(new { message = $"Producto {id} eliminado correctamente." });
+        }
 
-            return Ok(new { message = $"Producto {id} eliminado correctamente" });
+        [HttpPost("update-stock")]
+        public async Task<IActionResult> UpdateStock([FromBody] UpdateStockDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var (success, newStock, message) = await _productService.UpdateStockAsync(dto);
+
+            if (!success)
+            {
+                _logger.LogWarning("UpdateStock fallido: {Message}", message);
+                return BadRequest(new { message });
+            }
+
+            return Ok(new { message, newStock });
         }
     }
 }

@@ -1,0 +1,14 @@
+  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos están actualizados para la restauración.
+  Inventory.Transactions.Api -> C:\Fullstack_Netby\FullStack_Netby\Inventory.Transactions.Api\bin\Debug\net9.0\Inventory.Transactions.Api.dll
+C:\Fullstack_Netby\FullStack_Netby\Inventory.Transactions.Tests\TransactionServiceTests.cs(23,18): error CS1061: "DbContextOptionsBuilder<ApplicationDbContext>" no contiene una definición para "UseInMemoryDatabase" ni un método de extensión accesible "UseInMemoryDatabase" que acepte un primer argumento del tipo "DbContextOptionsBuilder<ApplicationDbContext>" (¿falta alguna directiva using o una referencia de ensamblado?) [C:\Fullstack_Netby\FullStack_Netby\Inventory.Transactions.Tests\Inventory.Transactions.Tests.csproj]
+
+ERROR al compilar.
+
+C:\Fullstack_Netby\FullStack_Netby\Inventory.Transactions.Tests\TransactionServiceTests.cs(23,18): error CS1061: "DbContextOptionsBuilder<ApplicationDbContext>" no contiene una definición para "UseInMemoryDatabase" ni un método de extensión accesible "UseInMemoryDatabase" que acepte un primer argumento del tipo "DbContextOptionsBuilder<ApplicationDbContext>" (¿falta alguna directiva using o una referencia de ensamblado?) [C:\Fullstack_Netby\FullStack_Netby\Inventory.Transactions.Tests\Inventory.Transactions.Tests.csproj]
+    0 Advertencia(s)
+    1 Errores
+
+Tiempo transcurrido 00:00:02.06
+
+Hay actualizaciones de carga de trabajo disponibles. Ejecute "dotnet workload list" para obtener más información.

@@ -27,4 +27,9 @@ RUN dotnet publish "./Inventory.Products.Api.csproj" -c $BUILD_CONFIGURATION -o 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# Aseguramos que existan las carpetas necesarias y permisos
+USER root
+RUN mkdir -p /app/wwwroot/images && chmod -R 777 /app/wwwroot/images
+
 ENTRYPOINT ["dotnet", "Inventory.Products.Api.dll"]
